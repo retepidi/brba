@@ -187,6 +187,14 @@
       cursor: not-allowed;
     }
 
+    .btn-ext {
+      background: #e65100;
+    }
+
+    .btn-ext:hover {
+      background: #f57c00;
+    }
+
     .btn-drive {
       background: #1a73e8;
     }
@@ -361,6 +369,7 @@
           <select id="sourceSelect">
             <option value="primesrc">PrimeSrc (Default)</option>
             <option value="gdrive">Google Drive Folder</option>
+            <option value="vadapav">Vadapav (Direct DL / No Ads)</option>
           </select>
         </div>
         <div>
@@ -372,8 +381,8 @@
       <div class="status-toast" id="resumeStatus"></div>
 
       <div class="nav-buttons">
-        <a id="driveBtn" class="btn-link btn-drive" href="https://drive.google.com/drive/folders/1IY6qairkXpK2RXE0UVtqwm5ZjeiGYk3N" target="_blank" style="display: none;">
-          Open Drive Folder ↗
+        <a id="extBtn" class="btn-link btn-ext" href="" target="_blank" style="display: none;">
+          Open Link ↗
         </a>
         <button id="prevBtn">&larr; Prev</button>
         <button id="nextBtn">Next &rarr;</button>
@@ -390,6 +399,7 @@
     const TMDB_ID = 1396;
     const SOURCE_TEMPLATE = "https://primesrc.me/embed/tv?tmdb={id}&season={season}&episode={episode}";
     const DRIVE_FOLDER_URL = "https://drive.google.com/drive/folders/1IY6qairkXpK2RXE0UVtqwm5ZjeiGYk3N";
+    const VADAPAV_URL = "https://vadapav.mov/01960931-ffa1-73d2-80e5-91a1eee9c480";
     const STORAGE_KEY = "breaking_bad_last_watched";
 
     // Fallback episode counts (S1-S5)
@@ -400,7 +410,7 @@
     const videoPlayer = document.getElementById("videoPlayer");
     const prevBtn = document.getElementById("prevBtn");
     const nextBtn = document.getElementById("nextBtn");
-    const driveBtn = document.getElementById("driveBtn");
+    const extBtn = document.getElementById("extBtn");
     const resumeStatus = document.getElementById("resumeStatus");
     const episodesGrid = document.getElementById("episodesGrid");
     const seasonTitle = document.getElementById("seasonTitle");
@@ -518,21 +528,34 @@
     }
 
     // Update Player, localStorage, and view
-    async function updatePlayer(season, episode, source) {
+    async function updatePlayer(season, episode, source, triggerWindowOpen = false) {
       currentSeason = season;
       currentEpisode = episode;
       currentSource = source;
 
-      if (source === "gdrive") {
+      if (source === "vadapav") {
+        videoPlayer.src = "about:blank";
+        extBtn.style.display = "inline-flex";
+        extBtn.className = "btn-link btn-ext";
+        extBtn.textContent = "Open Vadapav Directory ↗";
+        extBtn.href = VADAPAV_URL;
+
+        if (triggerWindowOpen) {
+          window.open(VADAPAV_URL, "_blank");
+        }
+      } else if (source === "gdrive") {
         videoPlayer.src = `${DRIVE_FOLDER_URL}?embedded=true`;
-        driveBtn.style.display = "inline-flex";
+        extBtn.style.display = "inline-flex";
+        extBtn.className = "btn-link btn-drive";
+        extBtn.textContent = "Open Drive Folder ↗";
+        extBtn.href = DRIVE_FOLDER_URL;
       } else {
         const url = SOURCE_TEMPLATE
           .replace("{id}", TMDB_ID)
           .replace("{season}", season)
           .replace("{episode}", episode);
         videoPlayer.src = url;
-        driveBtn.style.display = "none";
+        extBtn.style.display = "none";
       }
 
       saveProgress(season, episode, source);
@@ -551,7 +574,7 @@
     // Handle Source Selector
     sourceSelect.addEventListener("change", (e) => {
       const source = e.target.value;
-      updatePlayer(currentSeason, currentEpisode, source);
+      updatePlayer(currentSeason, currentEpisode, source, source === "vadapav");
     });
 
     // Handle Season Dropdown Change
