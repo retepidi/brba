@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Breaking Bad - Player</title>
+  <style>
+    :root {
+      --bg-color: #121212;
+      --card-bg: #1e1e1e;
+      --card-hover: #2a2a2a;
+      --accent-color: #388e3c;
+      --accent-hover: #4caf50;
+      --text-main: #e0e0e0;
+      --text-muted: #a0a0a0;
+      --border-color: #333333;
+      --active-border: #4caf50;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1000px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Show Header Card */
+    .show-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 20px;
+      display: flex;
+      gap: 20px;
+    }
+
+    .poster {
+      width: 130px;
+      height: 195px;
+      border-radius: 6px;
+      object-fit: cover;
+      background-color: #2a2a2a;
+      flex-shrink: 0;
+    }
+
+    .details {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .meta-info {
+      display: flex;
+      gap: 12px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      align-items: center;
+    }
+
+    .badge {
+      background: var(--accent-color);
+      color: #ffffff;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: bold;
+    }
+
+    .overview {
+      font-size: 0.95rem;
+      line-height: 1.5;
+      color: var(--text-main);
+    }
+
+    /* Video Player */
+    .player-wrapper {
+      position: relative;
+      width: 100%;
+      padding-top: 56.25%; /* 16:9 Aspect Ratio */
+      background-color: #000;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+    }
+
+    .player-wrapper iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    /* Controls Bar */
+    .controls-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .selectors {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    select {
+      background: var(--bg-color);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 8px 12px;
+      border-radius: 4px;
+      outline: none;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+
+    select:focus {
+      border-color: var(--accent-color);
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    button, .btn-link {
+      background: var(--accent-color);
+      color: #ffffff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      text-decoration: none;
+      font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+
+    button:hover, .btn-link:hover {
+      background: var(--accent-hover);
+    }
+
+    button:disabled {
+      background: #333333;
+      color: #666666;
+      cursor: not-allowed;
+    }
+
+    .btn-drive {
+      background: #1a73e8;
+    }
+
+    .btn-drive:hover {
+      background: #2b7de9;
+    }
+
+    .status-toast {
+      font-size: 0.85rem;
+      color: var(--accent-hover);
+    }
+
+    /* Section Heading */
+    .section-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-top: 10px;
+    }
+
+    /* Episode List Grid */
+    .episodes-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .episode-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px;
+      display: flex;
+      gap: 16px;
+      cursor: pointer;
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+
+    .episode-card:hover {
+      background-color: var(--card-hover);
+      border-color: var(--text-muted);
+    }
+
+    .episode-card.active {
+      border-color: var(--active-border);
+      background-color: #1a2e1c;
+    }
+
+    .episode-still {
+      width: 180px;
+      height: 101px;
+      border-radius: 6px;
+      object-fit: cover;
+      background-color: #2a2a2a;
+      flex-shrink: 0;
+    }
+
+    .episode-details {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      justify-content: center;
+      flex-grow: 1;
+    }
+
+    .episode-header-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .episode-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    .episode-meta {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .episode-overview {
+      font-size: 0.85rem;
+      color: var(--text-main);
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .playing-badge {
+      font-size: 0.75rem;
+      background: var(--accent-color);
+      color: #ffffff;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: bold;
+      display: none;
+    }
+
+    .episode-card.active .playing-badge {
+      display: inline-block;
+    }
+
+    @media (max-width: 600px) {
+      .show-card {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      .poster {
+        width: 120px;
+        height: 180px;
+      }
+      .episode-card {
+        flex-direction: column;
+      }
+      .episode-still {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 16/9;
+      }
+      .controls-card {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .selectors {
+        justify-content: space-between;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Media Details Header -->
+    <div class="show-card">
+      <img 
+        id="showPoster"
+        src="https://image.tmdb.org/t/p/w500/ztSlA38C1O813vT3uY6C80l2qO3.jpg" 
+        alt="Breaking Bad Cover" 
+        class="poster"
+      />
+      <div class="details">
+        <h1 class="title" id="showTitle">Breaking Bad</h1>
+        <div class="meta-info">
+          <span class="badge">TV-MA</span>
+          <span id="showDates">2008 – 2013</span>
+          <span id="showSeasons">5 Seasons</span>
+          <span id="showRating">★ 9.5</span>
+        </div>
+        <p class="overview" id="showOverview">
+          A high school chemistry teacher diagnosed with inoperable lung cancer turns to manufacturing and selling methamphetamine with a former student in order to secure his family's financial future.
+        </p>
+      </div>
+    </div>
+
+    <!-- Video Embed -->
+    <div class="player-wrapper" id="playerContainer">
+      <iframe id="videoPlayer" allowfullscreen src=""></iframe>
+    </div>
+
+    <!-- Controls Bar & Source Selection -->
+    <div class="controls-card">
+      <div class="selectors">
+        <div>
+          <label for="sourceSelect">Source</label><br>
+          <select id="sourceSelect">
+            <option value="primesrc">PrimeSrc (Default)</option>
+            <option value="gdrive">Google Drive Folder</option>
+          </select>
+        </div>
+        <div>
+          <label for="seasonSelect">Season</label><br>
+          <select id="seasonSelect"></select>
+        </div>
+      </div>
+
+      <div class="status-toast" id="resumeStatus"></div>
+
+      <div class="nav-buttons">
+        <a id="driveBtn" class="btn-link btn-drive" href="https://drive.google.com/drive/folders/1IY6qairkXpK2RXE0UVtqwm5ZjeiGYk3N" target="_blank" style="display: none;">
+          Open Drive Folder ↗
+        </a>
+        <button id="prevBtn">&larr; Prev</button>
+        <button id="nextBtn">Next &rarr;</button>
+      </div>
+    </div>
+
+    <!-- All Season Episodes List -->
+    <h2 class="section-title" id="seasonTitle">Season 1 Episodes</h2>
+    <div class="episodes-grid" id="episodesGrid"></div>
+  </div>
+
+  <script>
+    const API_KEY = "e950e51d5d49e85f7c2f17f01eb23ba3";
+    const TMDB_ID = 1396;
+    const SOURCE_TEMPLATE = "https://primesrc.me/embed/tv?tmdb={id}&season={season}&episode={episode}";
+    const DRIVE_FOLDER_URL = "https://drive.google.com/drive/folders/1IY6qairkXpK2RXE0UVtqwm5ZjeiGYk3N";
+    const STORAGE_KEY = "breaking_bad_last_watched";
+
+    // Fallback episode counts (S1-S5)
+    const SEASON_DATA = { 1: 7, 2: 13, 3: 13, 4: 13, 5: 16 };
+
+    const sourceSelect = document.getElementById("sourceSelect");
+    const seasonSelect = document.getElementById("seasonSelect");
+    const videoPlayer = document.getElementById("videoPlayer");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const driveBtn = document.getElementById("driveBtn");
+    const resumeStatus = document.getElementById("resumeStatus");
+    const episodesGrid = document.getElementById("episodesGrid");
+    const seasonTitle = document.getElementById("seasonTitle");
+
+    const seasonCache = {};
+    let currentSeason = 1;
+    let currentEpisode = 1;
+    let currentSource = "primesrc";
+
+    // Initialize season selector
+    function initSeasons() {
+      seasonSelect.innerHTML = "";
+      Object.keys(SEASON_DATA).forEach(season => {
+        const opt = document.createElement("option");
+        opt.value = season;
+        opt.textContent = `Season ${season}`;
+        seasonSelect.appendChild(opt);
+      });
+    }
+
+    // Load saved state from LocalStorage
+    function loadSavedProgress() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          const { season, episode, source } = JSON.parse(saved);
+          if (source) currentSource = source;
+          if (SEASON_DATA[season] && episode <= SEASON_DATA[season]) {
+            resumeStatus.textContent = `Resumed S${season} E${episode}`;
+            return { season: Number(season), episode: Number(episode), source: currentSource };
+          }
+        } catch (e) {
+          console.error("Failed to load progress", e);
+        }
+      }
+      return { season: 1, episode: 1, source: "primesrc" };
+    }
+
+    // Save state to LocalStorage
+    function saveProgress(season, episode, source) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ season, episode, source }));
+      resumeStatus.textContent = `Saved position: S${season} E${episode}`;
+    }
+
+    // Fetch Season details and episode data from TMDB API
+    async function fetchSeasonEpisodes(season) {
+      if (seasonCache[season]) {
+        return seasonCache[season];
+      }
+
+      try {
+        const res = await fetch(`https://api.themoviedb.org/3/tv/${TMDB_ID}/season/${season}?api_key=${API_KEY}`);
+        if (!res.ok) throw new Error("Network error fetching season");
+        const data = await res.json();
+        seasonCache[season] = data.episodes || [];
+        return seasonCache[season];
+      } catch (err) {
+        console.error("TMDB Fetch Error:", err);
+        return [];
+      }
+    }
+
+    // Render list of all episodes for the selected season
+    function renderSeasonEpisodes(season, episodes) {
+      episodesGrid.innerHTML = "";
+      seasonTitle.textContent = `Season ${season} Episodes (${episodes.length || SEASON_DATA[season]})`;
+
+      const total = episodes.length > 0 ? episodes.length : SEASON_DATA[season];
+
+      for (let i = 1; i <= total; i++) {
+        const ep = episodes[i - 1];
+        const card = document.createElement("div");
+        card.className = `episode-card ${i === currentEpisode ? 'active' : ''}`;
+        card.dataset.episode = i;
+
+        const stillPath = ep && ep.still_path 
+          ? `https://image.tmdb.org/t/p/w500${ep.still_path}` 
+          : "https://via.placeholder.com/500x281?text=No+Cover+Image";
+
+        const titleText = ep ? `E${i}: ${ep.name}` : `Episode ${i}`;
+        const metaText = ep ? `Air Date: ${ep.air_date || 'N/A'} • Rating: ★ ${ep.vote_average ? ep.vote_average.toFixed(1) : 'N/A'}` : '';
+        const overviewText = ep ? (ep.overview || "No overview available.") : "";
+
+        card.innerHTML = `
+          <img class="episode-still" src="${stillPath}" alt="${titleText}" />
+          <div class="episode-details">
+            <div class="episode-header-line">
+              <span class="episode-title">${titleText}</span>
+              <span class="playing-badge">PLAYING</span>
+            </div>
+            <div class="episode-meta">${metaText}</div>
+            <p class="episode-overview">${overviewText}</p>
+          </div>
+        `;
+
+        card.addEventListener("click", () => {
+          updatePlayer(season, i, currentSource);
+          document.getElementById("playerContainer").scrollIntoView({ behavior: "smooth" });
+        });
+
+        episodesGrid.appendChild(card);
+      }
+    }
+
+    // Highlight active playing episode card in the list
+    function highlightActiveCard(episodeNum) {
+      const cards = episodesGrid.querySelectorAll(".episode-card");
+      cards.forEach(card => {
+        if (Number(card.dataset.episode) === episodeNum) {
+          card.classList.add("active");
+        } else {
+          card.classList.remove("active");
+        }
+      });
+    }
+
+    // Update Player, localStorage, and view
+    async function updatePlayer(season, episode, source) {
+      currentSeason = season;
+      currentEpisode = episode;
+      currentSource = source;
+
+      if (source === "gdrive") {
+        videoPlayer.src = `${DRIVE_FOLDER_URL}?embedded=true`;
+        driveBtn.style.display = "inline-flex";
+      } else {
+        const url = SOURCE_TEMPLATE
+          .replace("{id}", TMDB_ID)
+          .replace("{season}", season)
+          .replace("{episode}", episode);
+        videoPlayer.src = url;
+        driveBtn.style.display = "none";
+      }
+
+      saveProgress(season, episode, source);
+      updateNavButtons(season, episode);
+
+      const episodes = await fetchSeasonEpisodes(season);
+
+      if (seasonSelect.value !== String(season)) {
+        seasonSelect.value = season;
+        renderSeasonEpisodes(season, episodes);
+      } else {
+        highlightActiveCard(episode);
+      }
+    }
+
+    // Handle Source Selector
+    sourceSelect.addEventListener("change", (e) => {
+      const source = e.target.value;
+      updatePlayer(currentSeason, currentEpisode, source);
+    });
+
+    // Handle Season Dropdown Change
+    seasonSelect.addEventListener("change", async (e) => {
+      const season = Number(e.target.value);
+      const episodes = await fetchSeasonEpisodes(season);
+      currentSeason = season;
+      currentEpisode = 1;
+      renderSeasonEpisodes(season, episodes);
+      updatePlayer(season, 1, currentSource);
+    });
+
+    // Nav Buttons
+    function updateNavButtons(season, episode) {
+      const totalSeasons = Object.keys(SEASON_DATA).length;
+      const currentSeasonMax = seasonCache[season]?.length || SEASON_DATA[season];
+      const lastSeasonMax = seasonCache[totalSeasons]?.length || SEASON_DATA[totalSeasons];
+
+      prevBtn.disabled = (season === 1 && episode === 1);
+      nextBtn.disabled = (season === totalSeasons && episode === lastSeasonMax);
+    }
+
+    prevBtn.addEventListener("click", async () => {
+      let season = currentSeason;
+      let episode = currentEpisode;
+
+      if (episode > 1) {
+        episode--;
+      } else if (season > 1) {
+        season--;
+        seasonSelect.value = season;
+        const episodes = await fetchSeasonEpisodes(season);
+        episode = episodes.length || SEASON_DATA[season];
+        renderSeasonEpisodes(season, episodes);
+      }
+
+      updatePlayer(season, episode, currentSource);
+    });
+
+    nextBtn.addEventListener("click", async () => {
+      let season = currentSeason;
+      let episode = currentEpisode;
+      const episodes = seasonCache[season] || await fetchSeasonEpisodes(season);
+      const totalEpisodes = episodes.length || SEASON_DATA[season];
+
+      if (episode < totalEpisodes) {
+        episode++;
+      } else if (SEASON_DATA[season + 1]) {
+        season++;
+        seasonSelect.value = season;
+        const nextEpisodes = await fetchSeasonEpisodes(season);
+        episode = 1;
+        renderSeasonEpisodes(season, nextEpisodes);
+      }
+
+      updatePlayer(season, episode, currentSource);
+    });
+
+    // Fetch Show Header info
+    async function fetchShowData() {
+      try {
+        const res = await fetch(`https://api.themoviedb.org/3/tv/${TMDB_ID}?api_key=${API_KEY}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        
+        if (data.poster_path) document.getElementById("showPoster").src = `https://image.tmdb.org/t/p/w500${data.poster_path}`;
+        if (data.name) document.getElementById("showTitle").textContent = data.name;
+        if (data.overview) document.getElementById("showOverview").textContent = data.overview;
+        if (data.vote_average) document.getElementById("showRating").textContent = `★ ${data.vote_average.toFixed(1)}`;
+      } catch (err) {
+        console.error("Show data fetch failed", err);
+      }
+    }
+
+    // App Initialization
+    async function init() {
+      initSeasons();
+      fetchShowData();
+
+      const initial = loadSavedProgress();
+      currentSeason = initial.season;
+      currentEpisode = initial.episode;
+      currentSource = initial.source || "primesrc";
+
+      seasonSelect.value = initial.season;
+      sourceSelect.value = currentSource;
+
+      const episodes = await fetchSeasonEpisodes(initial.season);
+      renderSeasonEpisodes(initial.season, episodes);
+
+      updatePlayer(initial.season, initial.episode, currentSource);
+    }
+
+    init();
+  </script>
+</body>
+</html>
